@@ -96,7 +96,7 @@ class WGANLoss:
         for p in self.discriminator.parameters():
             p.requires_grad = False
         fake_scores = self.discriminator(
-            fake_data, condition, landmarks)
+            fake_data, condition, landmarks) """we need to change the way the discriminator sets scores"""
         G_loss = (-fake_scores).sum()
 
         self.g_optimizer.zero_grad()

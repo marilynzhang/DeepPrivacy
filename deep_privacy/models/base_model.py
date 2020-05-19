@@ -16,6 +16,7 @@ class ProgressiveBaseModel(nn.Module):
             start_channel_size//16,
             start_channel_size//32,
         ]
+        """ why do they need to divide by 8 and multiply by 8?"""
         self.transition_channels = [x // 8 * 8
                                     for x in self.transition_channels]
         self.image_channels = image_channels
