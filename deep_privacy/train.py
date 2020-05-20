@@ -29,18 +29,29 @@ class Trainer:
 
     def __init__(self, config):
         # Set Hyperparameters
+        
+        #  All of the input-output channels
         self.batch_size_schedule = config.train_config.batch_size_schedule
         self.dataset = config.dataset
         self.learning_rate = config.train_config.learning_rate
         self.running_average_generator_decay = config.models.generator.running_average_decay
+        # Used in ProgressiveBaseModel that both G and D are based off of
+        # TODO: Figure out what it is actually doing lol
         self.pose_size = config.models.pose_size
+        # Normal vs. deep
+        # TODO: What's the difference
         self.discriminator_model = config.models.discriminator.structure
+        # Default = False
         self.full_validation = config.use_full_validation
+        # Can be used for tests?
         self.load_fraction_of_dataset = config.load_fraction_of_dataset
 
         # Image settings
+        # Image begins at 4x4 and slowly upsamples
         self.current_imsize = 4
         self.image_channels = 3
+        # The ending image dimension after series of upsamplings
+        # DeepPrivacy uses 128x128 usually
         self.max_imsize = config.max_imsize
 
         # Logging variables
