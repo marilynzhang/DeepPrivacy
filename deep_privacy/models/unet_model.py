@@ -15,4 +15,9 @@ def init_model(pose_size, start_channel_dim, image_channels, discriminator_model
                       pose_size)
     generator = Generator(pose_size, start_channel_dim, image_channels)
     discriminator, generator = wrap_models([discriminator, generator])
+
+    # Freeze discriminator
+    for parameter in discriminator.parameters():
+        parameter.requires_grad = False
+
     return discriminator, generator

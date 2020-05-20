@@ -201,7 +201,7 @@ class Trainer:
         self.d_optimizer = torch.optim.Adam(self.discriminator.parameters(),
                                             lr=self.learning_rate,
                                             betas=(0.0, 0.99))
-        self.g_optimizer = torch.optim.Adam(self.generator.children()[-1].parameters(),
+        self.g_optimizer = torch.optim.Adam(self.generator.parameters(),
                                             lr=self.learning_rate,
                                             betas=(0.0, 0.99))
 
