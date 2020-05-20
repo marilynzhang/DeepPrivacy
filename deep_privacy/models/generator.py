@@ -151,6 +151,7 @@ class Generator(ProgressiveBaseModel):
             new_down = self.new_down(new_down)
             unet_skips.append(new_down)
             new_down = self.downsampling(new_down)
+            # MZ: gets shape at this stage of the UNet 
             x = get_transition_value(old_down, new_down, self.transition_value)
         else:
             x = self.from_rgb_new(x_in)
@@ -181,5 +182,6 @@ class Generator(ProgressiveBaseModel):
         x = torch.cat((x, unet_skips[0], pose_channels[-1]), dim=1)
         x_new = self.new_up(x)
         x_new = self.to_rgb_new(x_new)
+        # MZ: Really confused. It returns a shape and not the gen. image?
         x = get_transition_value(x_old, x_new, self.transition_value)
         return x

@@ -343,6 +343,7 @@ class Trainer:
 
     def train_step(self, real_data, condition, landmarks):
         res = self.criterion.step(real_data, condition, landmarks)
+        """ when would res ever be None? """
         while res is None:
             res = self.criterion.step(real_data, condition, landmarks)
             self.num_skipped_steps += 1

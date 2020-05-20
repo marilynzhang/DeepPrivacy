@@ -81,6 +81,11 @@ class Discriminator(ProgressiveBaseModel):
         self.new_block = self.new_block
         super().extend()
 
+    def compute_fake_expression_accuracy(self, x, expression_gold):
+        # for each image in x (which is generated), compute its expression label
+        # return the differences between the gold label and generated label
+        pass
+
     def forward(self, x, condition, pose_info):
         pose_channels = generate_pose_channel_images(4,
                                                      self.current_imsize,
@@ -175,5 +180,6 @@ class DeepDiscriminator(ProgressiveBaseModel):
             x = block(x)
 
         x = x.view(x.shape[0], -1)
+        # MZ: This output layer is linear (presumably gives us a score)
         x = self.output_layer(x)
         return x

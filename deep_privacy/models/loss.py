@@ -63,19 +63,30 @@ class WGANLoss:
 
     def step(self, real_data, condition, landmarks):
         with torch.no_grad():
+            # MZ: I think this is calling Generator's "forward" method
             fake_data = self.generator(condition, landmarks)
-        # Train Discriminator
+        # -------------------------------------------------------------------
+        # Train Discriminator 
+        # MZ: I think this is calling Discriminator's "forward" method
         real_scores = self.discriminator(
-            real_data, condition, landmarks)
+            real_data, condition, landmarks) # MZ: real scores is the same as D(x)
         fake_scores = self.discriminator(
             fake_data.detach(), condition, landmarks)
-        # Wasserstein-1 Distance
-        wasserstein_distance = (real_scores - fake_scores).squeeze()
 
-        # Epsilon penalty
-        epsilon_penalty = (real_scores ** 2).squeeze()
+        # Wasserstein-1 Distance - MZ: distance between target ("real") and model ("fake") distributions
+        # MZ: essentially this is what they are using as their cost function
+        wasserstein_distance = (real_scores - fake_scores).squeeze()
+        # ^^^ super hacky, but we could add to this distance the difference
+        # between facial expression....? Multiplied by a factor
+        # wasserstein_distance += lambda*discriminator.compute_fake_expression_accuracy(fake_data, expression_gold)
+
+        # Epsilon penalty - MZ: D(x)^2, to prevent loss from drifting
+        epsilon_penalty = (real_scores ** 2).squeeze() 
 
         self.d_optimizer.zero_grad()
+
+        # MZ: the gradient penalty makes sure that the estimation they use for
+        #  W-Distance approximates the Lipschitz function
         gradient_pen = self.compute_gradient_penalty(real_data,
                                                      fake_data,
                                                      condition,
@@ -85,18 +96,25 @@ class WGANLoss:
         with amp.scale_loss(to_backward1, self.d_optimizer, loss_id=0) as scaled_loss:
             scaled_loss.backward(retain_graph=True)
 
-        to_backward3 = epsilon_penalty.sum() * 0.001
+        to_backward3 = epsilon_penalty.sum() * 0.001 # MZ: 0.001 is their epsilon penalty?
         with amp.scale_loss(to_backward3, self.d_optimizer, loss_id=2) as scaled_loss:
             scaled_loss.backward()
+
+        # MZ: OK, it looks like we are now updating the discriminator 
+        # weights?
         self.d_optimizer.step()
         if not torch_utils.finiteCheck(self.discriminator.parameters()):
             return None
         fake_data = self.generator(condition, landmarks)
-        # Forward G
+
+
+        # ---------------------------------------------------------------------
+        # Forward G - MZ: I'm not sure why they called it "Forward"; 
+        # this also does backprop on Generator, I think
         for p in self.discriminator.parameters():
             p.requires_grad = False
         fake_scores = self.discriminator(
-            fake_data, condition, landmarks) """we need to change the way the discriminator sets scores"""
+            fake_data, condition, landmarks) 
         G_loss = (-fake_scores).sum()
 
         self.g_optimizer.zero_grad()
