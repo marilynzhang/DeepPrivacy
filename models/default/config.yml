@@ -5,7 +5,7 @@ logging:
 max_imsize: 128
 use_full_validation: False
 load_fraction_of_dataset: False
-dataset: yfcc100m128
+dataset: fdf
 train_config:
   transition_iters: 1200000
   learning_rate: 0.00175
