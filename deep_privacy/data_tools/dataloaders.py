@@ -100,7 +100,7 @@ def load_images(dirpath, load_fraction):
         for job in tqdm.tqdm(jobs, desc="Reading images"):
             images.append(job.get())
 
-    print("Num images: ", len(images), type(images[0]))
+    print("Num images: ", len(images), type(images[0]), images[0].size, type(images[0].size))
     return images
 
 
