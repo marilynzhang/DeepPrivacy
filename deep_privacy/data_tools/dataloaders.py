@@ -25,7 +25,7 @@ def load_dataset(dataset, batch_size, imsize, full_validation, pose_size, load_f
         dirpath = os.path.join("data", "yfcc100m_torch_fix_transition")
         return _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, pose_size)
     if dataset == "fdf":
-        dirpath = os.path.join("data", "fdf_png")
+        dirpath = os.path.abspath().join("data", "fdf_png")
         return _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, pose_size)
     raise AssertionError("Dataset was incorrect", dataset)
 
