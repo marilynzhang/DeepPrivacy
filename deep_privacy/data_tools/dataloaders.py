@@ -90,7 +90,7 @@ def load_images(dirpath, load_fraction):
     files.sort(key=lambda x: int(os.path.basename(x).split(".")[0]))
     if load_fraction:
         files = files[:1000] + files[-MAX_VALIDATION_SIZE:]
-    # assert len(files) > 0, "Empty directory: " + dirpath
+    assert len(files) > 0, "Empty directory: " + dirpath
     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
         jobs = []
         for fpath in files:
