@@ -100,6 +100,7 @@ def load_images(dirpath, load_fraction):
         for job in tqdm.tqdm(jobs, desc="Reading images"):
             images.append(job.get())
 
+    # Debug info
     print("Num images: ", len(images), type(images[0]), images[0].size, type(images[0].size))
     return images
 
@@ -134,12 +135,15 @@ def load_dataset_files(dirpath, imsize, load_fraction):
 def _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, pose_size):
     images, bounding_boxes, landmarks = load_dataset_files(dirpath, imsize,
                                                            load_fraction)
+
+    print(len(images), len(bounding_boxes), len(landmarks))
     if full_validation:
         validation_size = MAX_VALIDATION_SIZE
     else:
         validation_size = 10000
 
     # Keep out 50,000 images for final validation.
+    # Zheng: This will crash if we have less than 50,000 images
     images_train, images_val = images[:-MAX_VALIDATION_SIZE], images[-validation_size:]
     bbox_train, bbox_val = bounding_boxes[:-MAX_VALIDATION_SIZE], bounding_boxes[-validation_size:]
     lm_train, lm_val = landmarks[:-MAX_VALIDATION_SIZE], landmarks[-validation_size:]
