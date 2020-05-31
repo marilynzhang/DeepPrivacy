@@ -84,8 +84,26 @@ def read_image(impath):
     return im
 
 
+# def load_images(dirpath, load_fraction):
+#     images = []
+#     files = glob.glob(os.path.join(dirpath, "*.png"))
+#     files.sort(key=lambda x: int(os.path.basename(x).split(".")[0]))
+#     if load_fraction:
+#         files = files[:1000] + files[-MAX_VALIDATION_SIZE:]
+#     assert len(files) > 0, "Empty directory: " + dirpath
+#     with multiprocessing.Pool(multiprocessing.cpu_count()) as pool:
+#         jobs = []
+#         for fpath in files:
+#             assert os.path.isfile(fpath), "Is not file: " + fpath
+#             jobs.append(
+#                 pool.apply_async(read_image, (fpath, )))
+#         for job in tqdm.tqdm(jobs, desc="Reading images"):
+#             images.append(job.get())
+#     return images
+
 def load_images(dirpath, load_fraction):
     images = []
+    image_ids = []
     files = glob.glob(os.path.join(dirpath, "*.png"))
     files.sort(key=lambda x: int(os.path.basename(x).split(".")[0]))
     if load_fraction:
@@ -95,6 +113,7 @@ def load_images(dirpath, load_fraction):
         jobs = []
         for fpath in files:
             assert os.path.isfile(fpath), "Is not file: " + fpath
+            image_ids.append(fpath)
             jobs.append(
                 pool.apply_async(read_image, (fpath, )))
         for job in tqdm.tqdm(jobs, desc="Reading images"):
@@ -102,12 +121,12 @@ def load_images(dirpath, load_fraction):
 
     # Debug info
     print("Num images: ", len(images), type(images[0]), images[0].size, type(images[0].size))
-    return images
+    return images, image_ids
 
 
 def load_dataset_files(dirpath, imsize, load_fraction):
     print("loading images from:", dirpath)
-    images = load_images(os.path.join(dirpath,
+    images, image_ids = load_images(os.path.join(dirpath,
                                       "images",
                                       str(imsize)),
                          load_fraction)
@@ -129,21 +148,33 @@ def load_dataset_files(dirpath, imsize, load_fraction):
                                     bounding_boxes[-MAX_VALIDATION_SIZE:]])
         landmarks = torch.cat([landmarks[:len(images) - MAX_VALIDATION_SIZE],
                                landmarks[-MAX_VALIDATION_SIZE:]])
+
+    print(
+        "Loaded images: ", len(images), 
+        " bounding boxes: ", len(bounding_boxes), 
+        " landmarks: ", len(landmarks)
+    )
+    print(image_ids)
+    
     return images, bounding_boxes, landmarks
 
 
 def _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, pose_size):
+    """
+    Setup: Google Colab 
+
+    Note: since the train/validation divide is hard-coded, if we decide to work with just
+    a subset of the data, we might end up with disproportionally small training data
+    """
     images, bounding_boxes, landmarks = load_dataset_files(dirpath, imsize,
                                                            load_fraction)
 
-    print(len(images), len(bounding_boxes), len(landmarks))
     if full_validation:
         validation_size = MAX_VALIDATION_SIZE
     else:
         validation_size = 10000
 
     # Keep out 50,000 images for final validation.
-    # Zheng: This will crash if we have less than 50,000 images
     images_train, images_val = images[:-MAX_VALIDATION_SIZE], images[-validation_size:]
     bbox_train, bbox_val = bounding_boxes[:-MAX_VALIDATION_SIZE], bounding_boxes[-validation_size:]
     lm_train, lm_val = landmarks[:-MAX_VALIDATION_SIZE], landmarks[-validation_size:]
