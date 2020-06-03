@@ -83,7 +83,10 @@ def read_image(impath):
     im.load()
     return im
 
-
+"""
+This is the original load_images function that won't work unless we loaded
+all images. Pretty tough...
+"""
 # def load_images(dirpath, load_fraction):
 #     images = []
 #     files = glob.glob(os.path.join(dirpath, "*.png"))
@@ -102,6 +105,10 @@ def read_image(impath):
 #     return images
 
 def load_images(dirpath, load_fraction):
+    '''
+    image_ids should contain ids of images we have loaded, this
+    way we can align them with the landmarks and the bounding boxes.
+    '''
     images = []
     image_ids = []
     files = glob.glob(os.path.join(dirpath, "*.png"))
@@ -113,14 +120,15 @@ def load_images(dirpath, load_fraction):
         jobs = []
         for fpath in files:
             assert os.path.isfile(fpath), "Is not file: " + fpath
-            image_ids.append(fpath)
+            id = int(fpath[fpath.rfind('/')+1: fpath.rfind('.')])
+            image_ids.append(id)
             jobs.append(
                 pool.apply_async(read_image, (fpath, )))
         for job in tqdm.tqdm(jobs, desc="Reading images"):
             images.append(job.get())
 
     # Debug info
-    print("Num images: ", len(images), type(images[0]), images[0].size, type(images[0].size))
+    # print("Num images: ", len(images), type(images[0]), images[0].size, type(images[0].size))
     return images, image_ids
 
 
@@ -150,9 +158,9 @@ def load_dataset_files(dirpath, imsize, load_fraction):
                                landmarks[-MAX_VALIDATION_SIZE:]])
 
     print(
-        "Loaded images: ", len(images), 
-        " bounding boxes: ", len(bounding_boxes), 
-        " landmarks: ", len(landmarks)
+        "Loaded images: ", len(images),
+        " bounding boxes: ", len(bounding_boxes), type(bounding_boxes),
+        " landmarks: ", len(landmarks), type(landmarks)
     )
     print(image_ids)
     
