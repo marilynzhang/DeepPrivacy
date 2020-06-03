@@ -129,7 +129,7 @@ def load_images(dirpath, load_fraction):
 
     # Debug info
     # print("Num images: ", len(images), type(images[0]), images[0].size, type(images[0].size))
-    return images, image_ids
+    return images, torch.tensor(image_ids)
 
 
 def load_dataset_files(dirpath, imsize, load_fraction):
@@ -157,6 +157,8 @@ def load_dataset_files(dirpath, imsize, load_fraction):
         landmarks = torch.cat([landmarks[:len(images) - MAX_VALIDATION_SIZE],
                                landmarks[-MAX_VALIDATION_SIZE:]])
 
+    bounding_boxes = bounding_boxes.index_select(0, image_ids)
+    landmarks = landmarks.index_select(0, image_ids)
     print(
         "Loaded images: ", len(images),
         " bounding boxes: ", len(bounding_boxes), type(bounding_boxes),
