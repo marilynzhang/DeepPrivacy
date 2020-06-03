@@ -204,6 +204,7 @@ def _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, p
                                        lm_train, True)
     dataset_val = DeepPrivacyDataset(images_val, bbox_val, lm_val, False)
     print("LEN DATASET VAL:", len(dataset_val), len(images_val))
+    print("batch size: ", batch_size)
 
     dataloader_train = torch.utils.data.DataLoader(dataset_train,
                                                    batch_size=batch_size,
@@ -212,6 +213,8 @@ def _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, p
                                                    drop_last=True,
                                                    pin_memory=True,
                                                    collate_fn=fast_collate)
+
+    print("torch finished loading train...")
     dataloader_val = torch.utils.data.DataLoader(dataset_val,
                                                  batch_size=batch_size,
                                                  shuffle=False,
@@ -219,6 +222,7 @@ def _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, p
                                                  drop_last=True,
                                                  pin_memory=True,
                                                  collate_fn=fast_collate)
+    print("torch finished loading val...")
     dataloader_train = DataPrefetcher(dataloader_train,
                                       pose_size, dataset_train)
     dataloader_val = DataPrefetcher(dataloader_val, pose_size, dataset_val)
