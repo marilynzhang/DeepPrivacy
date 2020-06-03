@@ -127,8 +127,6 @@ def load_images(dirpath, load_fraction):
         for job in tqdm.tqdm(jobs, desc="Reading images"):
             images.append(job.get())
 
-    # Debug info
-    # print("Num images: ", len(images), type(images[0]), images[0].size, type(images[0].size))
     return images, torch.tensor(image_ids)
 
 
@@ -157,13 +155,14 @@ def load_dataset_files(dirpath, imsize, load_fraction):
         landmarks = torch.cat([landmarks[:len(images) - MAX_VALIDATION_SIZE],
                                landmarks[-MAX_VALIDATION_SIZE:]])
 
+    # We only want bounding boxes and landmarks we have images for.
     bounding_boxes = bounding_boxes.index_select(0, image_ids)
     landmarks = landmarks.index_select(0, image_ids)
-    print(
-        "Loaded images: ", len(images),
-        " bounding boxes: ", len(bounding_boxes), type(bounding_boxes),
-        " landmarks: ", len(landmarks), type(landmarks)
-    )
+    # print(
+    #     "Loaded images: ", len(images),
+    #     " bounding boxes: ", len(bounding_boxes), type(bounding_boxes),
+    #     " landmarks: ", len(landmarks), type(landmarks)
+    # )
     print(image_ids)
     
     return images, bounding_boxes, landmarks
@@ -179,12 +178,23 @@ def _load_dataset(dirpath, imsize, batch_size, full_validation, load_fraction, p
     images, bounding_boxes, landmarks = load_dataset_files(dirpath, imsize,
                                                            load_fraction)
 
-    if full_validation:
-        validation_size = MAX_VALIDATION_SIZE
-    else:
-        validation_size = 10000
+    '''
+    Original train-val split and this is not what we want.
+    '''
+    # if full_validation:
+    #     validation_size = MAX_VALIDATION_SIZE
+    # else:
+    #     validation_size = 10000
 
-    # Keep out 50,000 images for final validation.
+    # # Keep out 50,000 images for final validation.
+    # images_train, images_val = images[:-MAX_VALIDATION_SIZE], images[-validation_size:]
+    # bbox_train, bbox_val = bounding_boxes[:-MAX_VALIDATION_SIZE], bounding_boxes[-validation_size:]
+    # lm_train, lm_val = landmarks[:-MAX_VALIDATION_SIZE], landmarks[-validation_size:]
+
+    '''
+    Basic train-val split, we can do better later.
+    '''
+    MAX_VALIDATION_SIZE = validation_size = int(len(images) * 0.25)
     images_train, images_val = images[:-MAX_VALIDATION_SIZE], images[-validation_size:]
     bbox_train, bbox_val = bounding_boxes[:-MAX_VALIDATION_SIZE], bounding_boxes[-validation_size:]
     lm_train, lm_val = landmarks[:-MAX_VALIDATION_SIZE], landmarks[-validation_size:]
